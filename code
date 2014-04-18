@@ -1,0 +1,915 @@
+
+var a=0;
+var b=0;
+angleMode="degrees";
+this.textFont(this.createFont("microsoft sans serif"));
+textSize(10);
+noStroke();
+frameRate(60);
+var mml=2e5;
+var health = 100;
+var death = 0;
+var kills = 0;
+var money = 750;
+var shop = 0;
+var swordbuy = 0;
+var magicbuy = 0;
+var gunbuy = 0;
+var notoggle = 1;
+var nomessage = 1;
+var drawsword = 0;
+var msize1 = 70;
+var msize2 = 70;
+var magicx = 300;
+var magicy = 315;
+var fire = 0;
+var mz=1.5;
+var kp=[],lkc,ms=0,msi=0,
+    msa=[-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1,-1];
+//var sc=[];
+var sb=[];
+/** ssx*ssy=screen size, smaller is faster **/
+var rs=1,ssx=400,ssy=400;
+//var fov=90;
+var toggles = 0;
+var smap=0,stxt=1,sgrid=0,sfloor=1,night=0,disco=0,nv=0,rain=0,snow=0,sword=0,magic=0,food = 0,gun = 0;
+var draw,vtx,phys,ps=0,tex=[],ntex,il=0,bi=0;
+var qline,dmap,ftx;
+var texs=""+
+// floor texture
+"331341332353443452452553453553453563554554463442"+
+"342443454553553564553554454664573564664573563563"+
+"453442563664775764655653674674685785795785564564"+
+"553554553784785875775685774685785786896895794565"+
+"554564664775774786784885785785794885895886775654"+
+"653553674665674776786895895784895895995886885673"+
+"4546646736847848859868A6885896795985896896875563"+
+"5645647857957848859969A5986885885886986885675564"+
+"563675885895884995A96996995985875985895895775563"+
+"4636737858958859968958968857858858868A6795785664"+
+"453664884886895894895786875786774785794885785673"+
+"5536647748868A6896795874675684784684785895776674"+
+"554654674894895894795794785785775794795886776664"+
+"5545646746757746847957846957747847857868A6785775"+
+"543554563674574664664574684574574675765784775564"+
+"342442452573454463453563573453554553664674563442"+
+
+"543543543653764665765764774664655643644564455544"+
+"654542654775877997987986A76A86986877886875875765"+
+"665563655977997AA9A98A97B97A97AA7AA79979A7997975"+
+"764754754886A97AA8AB8AA8BB7AA8CA8CA7BB9BB7AA8885"+
+"754764664876A87BA7AA7B97BA7A96AA7A97AA7A97A97887"+
+"555553453765776887887986896986886985885886786765"+
+"444543443444554655555764776764765564553563654655"+
+"544543442443434453555655654654553443443543454544"+
+"554664644445553655664755555453453554544544654664"+
+"987885777786786887885875654444554575866875877886"+
+"B97A98987997AA8AA7997876555553654876897A97A98AA9"+
+"AA8B97AB8A97AA7BA99978765456645548779A8BA8CA8BB8"+
+"A98AA8A97AA7A97AA7997866543553655886987987A98A97"+
+"876887977876986987876764554543543666886976876976"+
+"655655554655664756764544454443544653555655654643"+
+"543443443554555754765554554553553543444453443544"+
+
+//Changes to wall texture.
+
+"543543543653764665765764774664655643644564455544"+
+"654542654775877997987986A76A86986877886875875765"+
+"665563655977997AA9A98A97B97A97AA7AA79979A7997975"+
+"764754754886A97AA8AB8AA8BB7AA8CA8CA7BB9BB7AA8885"+
+"754764664876A87BA7AA7B97BA7A96AA7A97AA7A97A97887"+
+"555553453765776887887986896986886985885886786765"+
+"444543443444554655555764776764765564553563654655"+
+"544543442443434453555655654654553443443543454544"+
+"554664644445553655664755555453453554544544654664"+
+"987885777786786887885875654444554575866875877886"+
+"B97A98987997AA8AA7997876555553654876897A97A98AA9"+
+"AA8B97AB8A97AA7BA99978765456645548779A8BA8CA8BB8"+
+"A98AA8A97AA7A97AA7997866543553655886987987A98A97"+
+"876887977876986987876764554543543666886976876976"+
+"655655554655664756764544454443544653555655654643"+
+"543443443554555754765554554553553543444453443544"+
+
+"463342343352463462463352341442443553464684674574"+
+"453452452462563673562453352553453563585794785684"+
+"473452463673884794684574472563674674686795896694"+
+"4634525637848A58A67956847847857947967957A5796675"+
+"3624434636848959A69A68A58A48A58A57A4695594574564"+
+"3323313425727958A49A59B58A49B6795695584563452342"+
+"4422413325535635748947A49A47A4684573462443343243"+
+"563552452452352562564573673664352343343443552353"+
+"784784674663563552552462453352232343463463574789"+
+"9A59A57957947846745744532312312424525736858A4895"+
+"9A6AA5AB69B58A67956745733413313315627847958A5AA5"+
+"8A58949A6AA59B68A57946845533425436738949A59958A4"+
+"6848758959969A59A5794783452343463784894885674684"+
+"453562673684784795784784562442552673784784573563"+
+"362343563553573684784673453352452562573563563363"+
+"352343341352452662573552463353453553562562473452";
+var aclr=function(a,b,c,d){
+    var cr=0,cg=0,cb=0;
+    cr=sqrt(sq(a>>8)+sq(b>>8)+sq(c>>8)+sq(d>>8))*0.5;
+    cg=sqrt(sq(a>>4&15)+sq(b>>4&15)+sq(c>>4&15)+sq(d>>4&15))*0.5;
+    cb=sqrt(sq(a&15)+sq(b&15)+sq(c&15)+sq(d&15))*0.5;
+    //cr>>=2;cg>>=2;cb>>=2;
+    return round(cr)<<8|round(cg)<<4|round(cb);
+};
+var setup=function(){
+    var i=0,j=0,k,n,s,x,y,l;
+    ntex=ceil(texs.length/768);
+    while(i<ntex){
+        k=i*341;
+        for(j=0;j<256;j++){
+            n=unhex(texs[i*768+j*3])<<8|
+                unhex(texs[i*768+j*3+1])<<4|
+                unhex(texs[i*768+j*3+2]);
+            tex[k+j]=n;}
+        k=i*341;
+        k+=256;
+        for(s=8;s;s>>=1){
+            for(x=0;x<s;x++){
+                for(y=0;y<s;y++){
+                    l=k-s*s*4+y*s*4+x*2;
+                    tex[k+y*s+x]=aclr(
+                        tex[l],tex[l+1],
+                        tex[l+s*2],tex[l+s*2+1]);
+                }
+            }
+            k+=s*s;
+        }
+        i++;
+    }
+};
+setup();
+
+// Town Of DawnGuard
+
+var la=[
+// Walls
+100,100,320,100, //left
+100,100,100.1,320, //botom
+320.1,100,320,320, //top
+320,320,100,320, //right
+// Inside Obstacles
+160,180,206,180,
+250,174,150,174,
+150.3,226.9,150,174,
+157.5,226.7,212.8,226.05,
+250,174,250.1,212,
+228,226,250.1,212,
+//179,236,204,180,
+//209,247,242,212,
+228,226,206,226,
+206,180,206.1,226
+
+//223,187,241,192,
+//238,181,241,192];
+//var la=[0,0,200,0];
+
+// The Nether
+// Working on!
+
+// The Aether
+// Soon to come!
+];
+var px=235,py=190,pang=-90,pvx,pvy,pdx=0.04,pdy=0.04;
+var mpa=[0,0,0,0,0,0],mpi=0,mouf;
+var nl=la.length>>2;
+var cx,cy,ci,cm;
+var cast=function(ox,oy,dx,dy){
+    var ma,mb,ba,bb,m,i,j,x,y,fx,fy,fm,fi;
+    var x1,y1,x2,y2;
+    ma=dy/dx;
+    fx=ox+dx*566;fy=oy+dy*566;fm=1e12;fi=-1;
+    var l=la;
+    for(i=0;i<nl;i++){
+        j=i<<2;
+        x1=l[j];y1=l[j+1];x2=l[j+2];y2=l[j+3];
+        mb=(y2-y1)/(x2-x1);
+        ba=oy-ma*ox;
+        bb=y1-mb*x1;
+        x=(bb-ba)/(ma-mb);
+        y=ma*x+ba;
+        m=sq(x1-x2)+sq(y1-y2);
+        if(sq(x-x1)+sq(y-y1)>m||
+            sq(x-x2)+sq(y-y2)>m){continue;}
+        if((x-ox)*dx+(y-oy)*dy<0){continue;}
+        m=sq(x-ox)+sq(y-oy);
+        if(m<fm){fm=m;fx=x;fy=y;fi=i;}
+    }
+    cx=fx;cy=fy;ci=fi;cm=fm;
+};
+var tdraw=function(){
+    frameRate(ntex/2);
+    var tc,lm=4352;
+    var backsplash = getImage("space/background");
+    image(backsplash, 0, 0);//stroke(0x3300ffff);
+    var s=16,n=4,m=15,i,j=0,y=0,ti=341*(frameCount%ntex);
+    while(s){
+        for(i=0;i<s*s;i++){
+            tc=tex[ti+j+i];
+            tc=((tc&0xf)*17)|
+                ((tc>>4&0xf)*17<<8)|
+                ((tc>>8&0xf)*17<<16)|
+                0xff000000;
+            fill(tc);
+            rect((i&m)*8,y+(i>>n)*8,8,8);
+            //this.set(i&7,i>>3,tc);
+        }
+        y+=s*8;
+        j+=s*s;
+        n--;
+        m>>=1;
+        s>>=1;
+    }
+    fill(255);
+    text(ti,300,20);
+};
+
+var stripe=function(x,y,dx,dy,s,ds,n,ti,lm,p){
+    var nx,ny,i,c,r,g,b,mx=15,my=240,sx=28,sy=24,z=16,
+        //m=sqrt(sq(dx>>17)+sq(dy>>17));
+        m=sq(dx*8e-6)+sq(dy*8e-6),
+        //m=abs(dx*1e-6)+abs(dy*1e-6),
+        f=0;
+    lm=constrain(lm*3,0,4352)|0;
+    var xya=268435455;
+    var t=tex;
+    var rdx=1.0/dx,rdy=1.0/dy;
+    if(dx){m*=2;}
+    while(m>1e5&&z>1){
+        mx>>=1;my>>=1;
+        m>>=2;xya<<=1;
+        ti+=z*z;
+        z>>=1;sx++;sy+=0;f++;
+    }
+    if(z<2){dx=0;dy=0;}
+    mx&=15;my&=240;
+    while(n>0){
+        nx=dx?(dx>0?(xya-(x&xya))*rdx:-(x&xya)*rdx):400;
+        ny=dy?(dy>0?(xya-(y&xya))*rdy:-(y&xya)*rdy):400;
+        i=1;
+        if(nx<ny){i=nx;}else if(ny>1){i=ny;}
+        i=ceil(i);
+        if(i<1){i=1;}
+        n-=i;
+        if(n<0){i+=n;}
+        //c=t[ti+(x>>sx&mx)+(y+dy*(i>>1)>>sy&my)|0];
+        c=t[ti+(x>>sx&mx)+(y>>sx&mx)*z];
+        //c|=(i<3)+(i<2)+(i<1);
+        r=(c>>8&15)*lm>>8;
+        g=(c>>4&15)*lm>>8;
+        b=(c&15)*lm>>8;
+        x=x+dx*i&0xffffffff;
+        y=y+dy*i&0xffffffff;
+        while(i--){
+            p[s]=r;
+            p[s+1]=g;
+            p[s+2]=b;
+            s+=ds;
+        }
+    }
+};
+var mdraw=function(){
+    if(ps){return;}
+    frameRate(40);
+    var sx=0,sy=0,x,y,dy,dx,nx,ny,ix=0,iy,dsy,xp,yp,
+        t=millis(),et,d=0,s,lm,fc=frameCount,
+        ti,i,n,tp,vx,vy,vm,cd,tmp,m,
+        rx=sin(t*1e-2),ry=cos(t*1e-2);
+    nx=ssx/rs&0x1fe;
+    ny=ssy/rs&0x1fe;
+    pvx=sin(pang+1e-5);
+    pvy=cos(pang+1e-5);
+    fill(0,0,0);rect(0,ssy,400,400-ssy);
+    //px+=(pdx*=0.8);
+    var backsplash = getImage("space/planet");
+    if(!il){image(backsplash, 0, 0);}
+    fill(107, 163, 107);
+    if(snow){
+        fill(255, 255, 255);
+        pdx*=0.04;
+        pdy*=0.04;
+    }
+    phys();
+    rect(-8,202,439,215);
+    if(night){
+    fill(36, 36,36);
+    rect(-7, -1, 423, 204);
+    fill(250, 247, 192);
+    ellipse(233,72,75,75);
+        fill(36, 36, 36);
+    ellipse(252,66,60,60);
+    }
+    if(rain){
+    fill(138, 138, 138,150);
+    rect(0,0,400,200);
+    fill(94, 94, 94);
+    // cloud set 1
+    ellipse(0.65 + 51, 0, 45, 56);
+    ellipse(0.65 + 70, 10, 45, 56);
+    ellipse(0.65 + 78, 10, 61, 56);
+    ellipse(0.65 + 93, 7, 60, 56);
+    // 2nd set
+    ellipse(0.65 + 133, 0, 45, 56);
+    ellipse(0.65 + 158, 10, 45, 56);
+    ellipse(0.65 + 173, 10, 61, 56);
+    ellipse(0.65 + 210, 7, 60, 56);
+    // 3rd set
+    ellipse(0.65 + 249, 0, 45, 56);
+    ellipse(0.65 + 245, 10, 45, 56);
+    ellipse(0.65 + 292, 10, 61, 56);
+    ellipse(0.65 + 313, 7, 60, 56);
+    // 4th set
+    ellipse(0.65 + 356, 0, 45, 56);
+    ellipse(0.65 + 377, 10, 45, 56);
+    ellipse(0.65 + 22, 10, 61, 56);
+    ellipse(0.65 + 313, 7, 60, 56);
+    text("Clouds are being worked on",115,115);
+    
+        }
+    this.loadPixels();
+    var p=this.imageData.data;
+    for(iy=nx>>1;sfloor&&iy<ny;iy++){
+        if(snow){
+            iy=nx>>0;
+        }
+        sy=rs*iy;
+        //if(abs(sy-200)<2){continue;}
+        m=4/abs(sy-(ssy>>1));
+        cd=(4*(ssy>>1))/(5e-1*abs(sy-(ssy>>1)));
+        lm=4369.0/(1.0+cd*0.03)|0;
+        //lm=4369;
+        dx=pvy*m*rs;
+        dy=-pvx*m*rs;
+        x=px+(pvx)*m*200;
+        y=py+(pvy)*m*200;
+        y=y*536870912|0;
+        x=x*536870912|0;
+        dy=dy*536870912|0;
+        dx=dx*536870912|0;
+        stripe(x,y,dx,dy,
+            sy*1600+nx*2,4*rs,nx>>1,0,lm,p);
+        stripe(x,y,-dx,-dy,
+            sy*1600+nx*2-4*rs,-4*rs,nx>>1,0,lm,p);
+    }
+    for(ix=(il?fc&1:0);ix<nx;ix+=il+1){
+        sx=ix*rs;
+        vx=pvx+(pvy*(sx-(ssx>>1)))*5e-3;
+        vy=pvy-(pvx*(sx-(ssx>>1)))*5e-3;
+        cast(px,py,vx,vy);
+        if(ci<0){continue;}
+        vm=sqrt(vx*vx+vy*vy);
+        cd=sqrt(cm)/vm;//sqrt(cm);
+        x=sqrt(sq(cx-la[ci<<2])+sq(cy-la[(ci<<2)+1]));
+        dx=0;
+        dy=cd*5e-3*rs;
+        lm=4369.0/(1.0+cd*0.08)|0;//8728
+        dsy=(ssy>>1)-1/dy*4;
+        sy=(max(dsy,0)/rs|0)*rs|0;
+        y=dy*(sy-dsy)+0.1;
+        n=constrain((8-y)/dy,0,ssy-sy)|0;
+        y=y*536870912|0;
+        x=x*536870912|0;
+        dy=dy*536870912|0;
+        dx=dx*536870912|0;
+        stripe(x,y,dx,dy,sy*1600+sx*4,1600*rs,n,682,lm,p);
+        //stripe(x-y,y+x,dx-dy,dy+dx,sy*1600+sx*4,1600,n,682,lm,p);
+        d++;
+    }
+    if(sgrid){
+        for(x=0;x<400;x+=8){for(y=0;y<400;y+=8){
+            i=x*4+y*1600;
+            p[i+2]=p[i+1]=p[i]=255;
+        }}}
+        
+    this.updatePixels();
+    if(smap){dmap();}
+    et=millis()-ms;
+    msa[(msi=msi+1&16)]=et;
+    if(stxt){
+        fill(56, 247, 8);
+        x=1;for(i=0;i<16;i++){
+            if(msa[i]<0){x=NaN;break;}
+            x+=msa[i];
+        }
+        x*=625e-4;
+        //Shop!
+        if(!shop && !swordbuy){
+            fill(196, 196, 196,150);
+            rect(0,98,400,216);
+            fill(0, 51, 255);
+            textSize(25);
+            text("    press 'P'for store.\n get a Sword.. \n Then Press 'N' For inventory.\n Good Luck & Have A Great\n exploration of The Paper Voxel!! ",2,145);
+        }
+        if(shop){
+            fill(0, 255, 51);
+            rect(50,50,300,300,25);
+            textSize(30);
+            fill(0, 0, 0);
+            text("General Store",80,100);
+            text("Money $",85,140);
+            text(money,225,140);
+            textSize(20);
+            text("Sword $250",75,181);
+            fill(204, 202, 202);
+            rect(230,161,100,25,50);
+            fill(0, 0, 0);
+            text("BUY",255,182);
+            text("Magic $250",75,214);
+            fill(204,202,202);
+            rect(230,196,100,25,50);
+            fill(0, 0, 0);
+            text("BUY",255,217);
+            text("Gun    $500",75,247);
+            fill(204,202,202);
+            rect(230,229,100,25,50);
+            fill(0, 0, 0);
+            text("BUY",255,249);
+            textSize(15);
+            text("Press P to close the shop",100,300);
+        }
+        if(shop && mouseIsPressed && mouseX >=250 && mouseY <=182 && mouseY >= 160 && money >= 250){
+            swordbuy = 1;
+        }
+        if(shop && mouseIsPressed && mouseX >=255 && mouseY <=217 && mouseY >= 180 && money >= 250){
+            magicbuy = 1;
+        }
+            if(shop && mouseIsPressed && mouseX >=255 && mouseY <=249 && mouseY >= 177 && money >= 500){
+            gunbuy = 1;
+        }
+        if(sword && !magic && swordbuy){
+    nomessage = 0;
+    strokeWeight(0.5);
+    stroke(0, 0, 0);
+    rotate(-2.0);
+    translate(-11,0);
+    fill(140, 138, 138);
+    triangle(356,203,341,411,327,146); // Back blade
+    fill(179, 177, 177);
+    triangle(353,203,339,430,328,146); // Front Blade
+        fill(148, 148, 148);
+    triangle(313,203,339,426,328,146); // Front Blade
+    resetMatrix();
+    if(sword){
+        //Hilt color
+        rotate(-3.1);
+        fill(255, 204, 0);
+        rect(289,373,49,13);
+        resetMatrix();
+        rotate(-3.1);
+        fill(194, 156, 2);
+        rect(337,373,15,13);
+        resetMatrix();
+        //Handle color
+        fill(71, 54, 27);
+        strokeWeight(1);
+        stroke(0, 0, 0);
+        rotate(-3.1);
+        rect(322,386,9,32);
+        fill(115, 89, 46);
+        rect(311,386,13,32);
+        resetMatrix();
+    }
+    noStroke();
+        }
+        if(magic && magicbuy && !sword && !shop && !food){
+        fill(0, 196, 255);
+        ellipse(magicx,magicy,msize1,msize2);
+        }
+        if(magic && mouseIsPressed && mouseButton ===RIGHT){
+            msize1 = msize1 -5;
+            msize2 = msize2 -5;
+            magicx = magicx -8;
+            magicy = magicy -8;
+            
+        }
+        if(msize1 && msize2 <=0){
+            msize1 = 70;
+            msize2 = 70;
+            fill(255, 255, 255);
+            rect(0,0,400,400);
+        }
+        if(magicx && magicy <=200){
+            magicx = 301;
+            magicy = 316;
+        }
+        if(magic && magicbuy){
+            fill(34, 255, 0);
+            textSize(12);
+            text("Hold down the right mouse To Attack!",6,300);
+        }
+        if(magic && !magicbuy){
+            fill(64, 255, 0);
+            textSize(15);
+            text("Please Buy This From The Store",10,300);
+            
+        }
+        noStroke();
+        if(gun && !magic && !sword){
+            textSize(15);
+            text("Will Be Added Soon!",125,200);
+        }
+        /*if(gun && !sword && !magic && !food){
+            textSize(15);
+    text("Press Shift To Shoot!",10,300);
+    resetMatrix();
+    rotate(15.7);
+    translate(100,-14);    
+    noStroke();
+    // Sights
+    // right sight
+    fill(201,201,201);
+    rect(333,202,5,5);
+    fill(184,184,184);
+    rect(336,202,5,5);
+    // left sight
+    fill(201,201,201);
+    rect(320,202,5,5);
+    fill(184,184,184);
+    rect(316,202,5,5);
+    // front sight
+    fill(201,201,201);
+    rect(216,202,5,5);
+    fill(184,184,184);
+    rect(218,202,5,5);
+    //barrel
+    fill(184,184,184);
+    ellipse(209,225,7,16);
+    // misc
+    strokeWeight(0.1);
+    stroke(102, 101, 102);
+    // 3D effect
+    fill(184, 184, 184);
+    rect(301,207,51,38,1);
+    // Left side body
+    fill(201, 201, 201);
+    rect(209,207,92,38,1);
+    resetMatrix();
+    noStroke();
+    rotate(15.7);
+    translate(100,-14);  
+    // hammer hole
+    fill(194, 192, 194);
+    rect(321,230,4,15);
+    rect(321,226,15,4);
+    rect(331,230,4,15);
+    fill(150);
+    rect(326,230,5,15);
+    // Handle
+    fill(128, 126, 128);
+    rect(301,246,51,94);
+    fill(92, 92, 92);
+    rect(301,246,51,84,50);
+    fill(145, 142, 145);
+    rect(280,246,21,94);
+    resetMatrix();
+    rotate(-53);
+    translate(-344,124);
+    noFill();
+    strokeWeight(2);
+    stroke(145);
+    arc(361,335,230,175,180,207);
+    resetMatrix();
+    rotate(-127);
+    translate(-660,-286);
+    arc(328,335,227,252,182,187);
+    // Detail lines
+    noStroke();
+    resetMatrix();
+}
+if(keyIsPressed && gun  && keyCode === SHIFT){
+    fill(255, 255, 255);
+    rect(0,0,400,400);
+    
+}
+*/
+        textSize(12);
+        if(night){
+            fill(213, 0, 255);
+            text("Time: Night",89,330);
+        }
+                if(!night){
+                fill(0, 225, 255);
+            text("Time: Day",89,330);
+        }
+    var color1 = random(0, 255); // Random color 0-255
+    var color2 = random(0, 255); // Random color 0-255
+    var color3 = random(0, 255); // Random color 0-255
+        if(disco){
+            fill(color1, color2, color3,150);
+            rect(0,0,400,400);
+        }
+        if(rain && !night && !snow){
+            fill(0, 255, 132);
+            text("Raining",90,345);
+            var rain1 = random(0,400);
+            var rain2 = random(400,0);
+            var rain3 = random(1,500);
+            var rain4 = random(0,400);
+            var sr = random(5,15);
+            fill(0, 145, 255,175);
+            rect(20,rain1,3,sr);
+            rect(124,rain2,3,sr);
+            rect(178,rain3,3,sr);
+            rect(rain4,rain1,3,15);
+            rect(rain4,rain2,3,sr);
+            rect(rain3,rain4,3,sr);
+            
+        }
+            if(snow && !night && !rain){
+            fill(0, 255, 132);
+            text("Snowing",90,345);
+            var s1 = random(0,400);
+            var s2 = random(400,0);
+            var s3 = random(1,500);
+            var s4 = random(0,400);
+            fill(255, 255, 255);
+            rect(20,s1,3,3);
+            rect(124,s2,3,3);
+            rect(178,s3,3,3);
+            rect(s4,s1,3,3);
+            rect(s4,s2,3,3);
+            
+        }
+       
+        textSize(12);
+        fill(153, 153, 153,150);
+        rect(-6,316,180,132);
+        fill(196, 255, 0);
+        text("Health",20,330);
+        fill(255, 0, 0);
+        textSize(15);
+        text("♥",20,345);
+        text(health,29,345);
+        if(health <= -1){
+            health = 0;
+        }
+        if(health >= 99 || health <= 100){
+            health = 100;
+        }
+        if(mouseIsPressed && mouseX >= 200 && mouseY >= 350 && food){
+            health = health +1;
+        }
+        
+        if(food){
+            sword = 0;
+            magic = 0;
+            gun = 0;
+            stroke(0, 0, 0);
+            rotate(-15.7);
+            translate(-36,86);
+            fill(148, 123, 49);
+            ellipse(282,352,50,132);
+            noStroke();
+            fill(130, 107, 43);
+            ellipse(282,330,38,10);
+            ellipse(282,350,38,10);
+            ellipse(282,370,38,10);
+            resetMatrix();
+            fill(255, 0, 0);
+            text("We Need Item Models! Including Food!",0,299);
+            stroke(0, 0, 0);
+            strokeWeight(1);
+            fill(194, 194, 194,150);
+            rect(194,355,122,30,50);
+            fill(130, 107, 43);
+            text("Click To Eat",200,375);
+            noStroke();
+            
+        }
+        if(health <= 0){
+            death = 1;
+        }
+        if(health >= 0){
+            death = 0;
+        }
+        fill(72, 255, 0);
+        textSize(12);
+        text("Money: $",20,360);
+        text(money,83,360);
+        if(money <= 0){
+            money = 0;
+        }
+        if(swordbuy && mouseIsPressed && shop && money >= 250){
+            shop = 0;
+            money = money-250;
+            money = money;
+            }
+            if(magicbuy && mouseIsPressed && shop && money >= 250){
+                shop = 0;
+                money = money-250;
+            }
+            if(gunbuy && mouseIsPressed && shop && money >= 500){
+                money = money-500;
+                shop = 0;
+            }
+        fill(204, 0, 255);
+        text("Press N for Toggles",20,375);
+        fill(0, 0, 0);
+        text("Created by Kbossthegreat,20,390);
+        //Death Screen
+        if(death){
+            frameRate(60);
+            fill(56, 56, 56,200);
+            rect(0,0,400,400);
+            fill(255, 0, 0);
+            textSize(80);
+            text("Oh Noes!",0,100);
+            textSize(50);
+            text("You Died",75,150);
+            textSize(30);
+            text(" You Killed     creatures!",0,210);
+            text(kills,200,210);
+            }
+var declare = function(){
+//put the value it started with
+a = 0;
+b = 0;
+};
+
+declare();
+if (mouseIsPressed && mouseX>200 && mouseX<200 && mouseY>0 && mouseY<50 && death){
+declare();
+}
+        if(toggles){
+            fill(140, 140, 140,200);
+            rect(0,0,400,400);
+            textSize(30);
+            fill(255, 0, 0);
+            text("List of Toggles",90,38);
+            textSize(20);
+            text("Press the following keys for:",50,70);
+            text("1 = Sword\n2 = Magic\n3 = Food\n4 = Gun ( Not Added )\nR = Rain\nH = Snow\nM = Map\nT = Day/Night\nV = Disco Vision\nG = Night Vision\nP = The Shop",75,101);
+        }
+        if(nv && night &&!rain && !snow){
+            fill(43, 255, 0,75);
+            stroke(0);
+            strokeWeight(44);
+            rect(20,102,369,200);
+            
+            noStroke();
+            fill(0, 0, 0);
+            rect(0,278,400,199);
+            rect(0,-78,400,199);
+            rect(-9,114,20,20);
+            rect(393,114,20,20);
+            rect(193,114,20,20);
+            rect(193,269,20,20);
+            rect(-9,269,20,20);
+            rect(393,269,20,20);
+            noStroke();
+            fill(255, 0, 0);
+            textSize(15);
+            text("Night-Vison Goggles",120,75);
+            text("Press 'G' To Turn Them Off",100,100);
+            textSize(12);
+        }
+        
+        
+    }
+    ms=millis();
+    if(kp[87]){pdx+=pvx;pdy+=pvy;}
+    if(kp[83]){pdx-=pvx;pdy-=pvy;}
+    if(kp[75]){pang-=10;}
+    if(kp[76]){pang+=10;}
+    if(kp[68]){pdx+=pvy;pdy-=pvx;}
+    if(kp[65]){pdx-=pvy;pdy+=pvx;}
+    //px+=(pdx*=0.5);py+=(pdy*=0.5);
+    //if(et<30){rsx++;rsy++;}else{rsx--;rsy--;}
+    
+};
+dmap=function(){
+    frameRate(0.5);
+    background(0, 0, 0);
+    var i,j,x1,y1,x2,y2,x1t,x2t;
+    fill(0x3f00ff00);
+    for(i=0;i<nl;i++){
+        j=i<<2;
+        x1=la[j]-px;y1=la[j+1]-py;
+        x2=la[j+2]-px;y2=la[j+3]-py;
+        x1t=x1;x2t=x2;
+        x1=-x1*pvy+y1*pvx;
+        x2=-x2*pvy+y2*pvx;
+        y1=-y1*pvy-x1t*pvx;
+        y2=-y2*pvy-x2t*pvx;
+        //fill(0x3f000000);
+        //qline(x1*mz+201,y1*mz+267,
+        //    x2*mz+201,y2*mz+345,0.88);
+        fill(255, 204, 0);
+        qline(x1*mz+200,y1*mz+200,
+            x2*mz+200,y2*mz+200,0.88);
+            textSize(17);
+            fill(0, 115, 255);
+            text("Press M to close the map \n      (takes a second)",12,100);
+            textSize(70);
+            fill(115, 255, 0);
+            text("MAP",61,69);
+    }
+    fill(255, 0, 0);
+    //triangle(200+-12,248+-50,204+12,248+-50,201,240+-82);
+    ellipse(200,200,4,4);
+};
+var phys=function(){
+    var rad=3;
+    px+=(pdx*=0.5);py+=(pdy*=0.5);
+    var i,x1,y1,x2,y2,x=px,y=py,dx,dy,l=la,m,s=rad,s2=s*s,b,
+        ma,mb,ba,bb,lx,ly,str;
+    
+    for(i=0;i<l.length;i+=4){
+        x1=l[i];y1=l[i+1];x2=l[i+2];y2=l[i+3];
+        
+        ma=(abs(x2-x1)>1e-6)?(y2-y1)/(x2-x1):1e6;
+        ba=y1-ma*x1;
+        mb=ma?-1.0/ma:1e6;
+        bb=y-mb*x;
+        lx=(ba-bb)*mb/(mb*mb+1);
+        ly=ma*lx+ba;
+        
+        m=sq(x1-x2)+sq(y1-y2);
+        if(sq(lx-x1)+sq(ly-y1)<m&&sq(lx-x2)+sq(ly-y2)<m){
+            dx=x-lx;
+            dy=y-ly;
+            m=dx*dx+dy*dy;
+            if(m<s2){
+                m=s/sqrt(m);
+                dx*=m;dy*=m;
+                x=lx+dx;
+                y=ly+dy;
+                continue;
+            }
+        }
+        
+        dx=x-x1;dy=y-y1;m=dx*dx+dy*dy;
+        if(m<s2){
+            m=s/sqrt(m);
+            dx*=m;dy*=m;
+            x=x1+dx;y=y1+dy;
+            continue;}
+        dx=x-x2;dy=y-y2;m=dx*dx+dy*dy;
+        if(m<s2){
+            m=s/sqrt(m);
+            dx*=m;dy*=m;
+            x=x2+dx;y=y2+dy;
+            continue;}
+    }
+    px=x;py=y;
+};
+var pdraw=function(){
+    frameRate(1);
+    fill(112, 112, 112);
+    rect(0,0,400,400);
+    fill(255, 0, 0);
+    textSize(60);
+    text("PAUSED",75,103);
+    textSize(25);
+    text("Press SpaceBar To Resume",15,130);
+    textSize(12);
+    fill(255, 255, 255);
+    ellipse(100,285,5,5);
+    ellipse(110,270,10,10);
+    ellipse(120,255,15,15);
+    ellipse(200,200,200,125);
+    fill(255, 0, 0);
+    text("Having Fun?",160,160);
+    text("Then don't forget to leave \n a comment thanking me\n and Arcus for making this\n  game just for you guys!\n               -Kbossthegreat",114,179);
+};
+vtx=function(s,x,y){
+    fill(0,0,0,128);
+    for(var i=0;i<9;i++){
+        if(i===4){continue;}
+        text(s,x+i%3-1,y+floor(i/3)-1);}
+    fill(255);
+    text(s,x,y);};
+draw=mdraw;
+var keyPressed=function(){
+    kp[keyCode]=1;
+    if(keyCode===73){il^=1;}else
+    if(keyCode===66){bi^=1;}else
+    if(keyCode===77){smap^=1;}else
+    if(keyCode===78){toggles^=1;}else
+    if(keyCode===84){night^=1;}else
+    if(keyCode===86){disco^=1;}else
+    if(keyCode===71){nv^=1;}else
+    if(keyCode===82){rain^=1;}else
+    if(keyCode===72){snow^=1;}else
+    if(keyCode===49){sword^=1;}else
+    if(keyCode===50){magic^=1;}else
+    if(keyCode===51){food^=1;}else
+    if(keyCode===52){gun^=1;}else
+    if(keyCode===53){fire^=1;}else
+    if(keyCode===80){shop^=1;}else
+    if(keyCode===32){
+        if(ps){draw=mdraw;}else{draw=pdraw;}ps=!ps;}
+};
+var keyReleased=function(){kp[keyCode]=0;};
+var mouseDragged=function(){
+    //px=mouseX;py=mouseY;
+    //pang=atan2(mouseY-pmouseY,mouseX-pmouseX);
+    pang+=mouseX-pmouseX;
+    //pang+=mouseY-pmouseY;
+};
+qline=function(x1,y1,x2,y2,t,l){
+    var x=x2-x1,y=y2-y1,m=t/sqrt(x*x+y*y);x*=m;y*=m;
+    quad(x1+y,y1-x,x1-y,y1+x,x2-y,y2+x,x2+y,y2-x);};
+
